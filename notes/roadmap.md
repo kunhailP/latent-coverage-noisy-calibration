@@ -14,6 +14,7 @@ between units, and what is the smallest correction it needs.
 | Bi-log-concave non-log-concave (bimodal) latent law in the main comparison | done (R02) |
 | Mixed noise laws across units within a class | done (R02 widths, R03 exact stress) |
 | Heterogeneous latent laws | **proved** as a corollary of Theorem 2: per-unit q-quantile condition; exact check R06 (`notes/heterogeneous_latent.md`) |
+| R04 comparison with existing methods | done (findings below) |
 | Rewrite in the Sinica template | todo |
 
 ## R01 findings (Gaussian-extremal law, delta = 0.05)
@@ -86,3 +87,28 @@ the cleanest figure for the paper: valid, sharp, and the usual rank collapsing.
   shortfalls, large loss of the PAC guarantee.
 - Roles: R02 measures the cost of the guarantee (all rules >= 0.998); R01 and R03 show when the
   correction is needed. "Smallest valid rank" is within order-statistic rules |V|_(k).
+
+## R04 findings (competitors, 300 / 200 data sets at K = 110 / 1000, q = 0.9, delta = 0.05)
+
+6 latent laws (t3 outside the class) x noise Gaussian / Laplace / mixed symmetric unimodal, same
+variances. Each rule judged against its own target (reporting rules above). Widths relative to
+the usual rank, bi-log-concave latent laws.
+- Ours (no noise information): reliability 1.000 in every setting, t3 included; +0% (K = 110),
+  +0.3-0.9% (K = 1000) over the usual rank. The usual rank was also at 1.000: benign laws, as in R02.
+- LatentCP (known D_i, marginal target): meets its target in every setting (mean coverage >=
+  0.970), also under Laplace and mixed noise where its Gaussian forward model is wrong. Wider than
+  ours by 4-7% (K = 110) and 14-21% (K = 1000); tuned / two-level variants wider still.
+  Do not call it a failure; the point is that ours needs no variances and is not wider.
+- Shape-free with known D_i: +19-25%. LatentCP at a PAC rank = median-zero level: +20-42%.
+- Fay-Herriot (known D_i, normal model): 16-24% narrower, mean coverage >= 0.914, but PAC
+  reliability down to 0.900-0.937 for Laplace latent laws and for normal latent laws with
+  non-Gaussian noise (0.915-0.935 at K = 1000). Fine under its own model.
+- HetLDC (known D_i, Gaussian noise, log-concave W; K = 110 Gaussian only): about 10% narrower,
+  reliability >= 0.983 for every latent law. What known variances buy, under Gaussian noise.
+- simple_shrink (known D_min): about 1% narrower at K = 110, same as ours at K = 1000.
+- Cohen et al. deconvolution (our reimplementation, as in Biometrika E34): mean coverage 0.28
+  (bin 0.01, K = 110) and 0.87-0.92 (bin 0.2) - below the nominal 0.9 in many settings.
+  State that this is our reimplementation; the failure may partly reflect tuning (bin width, lam).
+Message: without noise information the rule costs at most ~1% over the usual rank, is not wider
+than LatentCP with known variances, and only rules that know the variances and assume Gaussian
+noise (HetLDC) or a normal model without a PAC guarantee (Fay-Herriot) are narrower.
