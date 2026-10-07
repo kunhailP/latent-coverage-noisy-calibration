@@ -92,9 +92,10 @@ def cohen(V, D, h=0.05, lam=0.01, step=0.01, masked=True):
     m = int(np.ceil(4 * sd / h))
     off = np.arange(-m, m + 1) * h
     kern = np.mean(stats.norm.pdf(off[:, None], scale=np.sqrt(D)[None, :]), axis=1) * h
-    A = np.zeros((L, L))
-    for i, o in enumerate(range(-m, m + 1)):
-        A += np.eye(L, k=-o) * kern[i]
+    # banded Toeplitz matrix A[r, c] = kern[r - c + m] for |r - c| <= m, built in one step
+    # (identical to summing kern[i] * np.eye(L, k=-o) over the offsets, which took 95% of a job)
+    diff = np.subtract.outer(np.arange(L), np.arange(L))
+    A = np.where(np.abs(diff) <= m, kern[np.clip(diff + m, 0, 2 * m)], 0.0)
     mask = hist > 1e-12 if masked else np.ones(L, bool)
     Am = np.vstack([A[mask], np.sqrt(lam) * np.eye(L)])
     bm = np.concatenate([hist[mask], np.zeros(L)])
