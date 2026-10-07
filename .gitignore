@@ -10,3 +10,8 @@ results/*.csv.gz
 .pytest_cache/
 data/
 results/*.ckpt.jsonl
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.out
+paper/*.synctex.gz
