@@ -70,3 +70,19 @@ the cleanest figure for the paper: valid, sharp, and the usual rank collapsing.
 - Gaussian exactness is framed as completing a row of Table 1, not as the headline.
 - The Hoeffding condition k >= K p_k + 1 of the old `certified_rank` never changed a rank for
   29 <= K <= 1e5; the new interface uses the binomial form of Theorem 2 only.
+
+## Reporting rules for R04 and R05 (from the external review, 2026-10-07)
+
+- Every comparison table states, per rule, the information it uses and the guarantee it targets
+  (the `information` and `guarantee` columns of R04). A rule is judged against its own target:
+  LatentCP and plain conformal by mean coverage >= q (marginal), PAC rules by reliability >= 1 - delta.
+  LatentCP's reliability below 0.95 is not a failure of LatentCP.
+- R05: at K = 110 every class rank equals the usual rank (k = 105), so the intervals are the
+  same; the point is that they need no variance estimates. The LatentCP there is an application
+  variant (a new district's variance drawn from the calibration estimates D_c), to be said so.
+- R01 wording: "reliability 0.713" is the share of calibration samples whose latent coverage is
+  >= q, not a coverage of 71.3%; the usual rank's limiting latent coverage at that law is
+  0.79534 (q = 0.8) and 0.89918 (q = 0.9), recomputed from the small-noise limit. Small coverage
+  shortfalls, large loss of the PAC guarantee.
+- Roles: R02 measures the cost of the guarantee (all rules >= 0.998); R01 and R03 show when the
+  correction is needed. "Smallest valid rank" is within order-statistic rules |V|_(k).

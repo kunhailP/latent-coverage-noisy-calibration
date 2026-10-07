@@ -46,8 +46,16 @@ def psi_tilde(b):
 def b_star_bounds(q, tol=1e-15):
     """Doubles lo < b* < hi with A(lo) > a > A(hi) proved in ball arithmetic (A decreases)."""
     a = -ball(q).log()
+    # b* -> -inf as q -> 1/e and -> +inf as q -> 1: widen until the root is bracketed
     lo, hi = -40.0, 40.0
-    assert A_of(ball(lo)) > a and A_of(ball(hi)) < a
+    while not A_of(ball(lo)) > a:
+        lo *= 2
+        if lo < -1e12:
+            raise ValueError(f'cannot bracket b* at q = {q}: too close to 1/e')
+    while not A_of(ball(hi)) < a:
+        hi *= 2
+        if hi > 1e12:
+            raise ValueError(f'cannot bracket b* at q = {q}: too close to 1')
     while hi - lo > tol * max(1.0, abs(hi)):
         mid = (lo + hi) / 2
         v = A_of(ball(mid))

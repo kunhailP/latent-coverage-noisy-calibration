@@ -1,10 +1,11 @@
 # Heterogeneous latent laws
 
-Status: proof complete (a corollary of the proof of Theorem 2, no new tools). Exact check in
-`experiments/r06_heterogeneous_latent.py`, output `results/heterogeneous_latent.csv`.
+Status: proof complete (a corollary of the proof of Theorem 2, no new tools). Numerical check in
+`experiments/r06_heterogeneous_latent.py`, outputs `results/heterogeneous_latent*.csv`.
 
-Purpose: answer the referee question "must all units share one latent law?". Not a scope
-extension; one paragraph in the main text plus the remarks below in the supplement.
+Purpose: answer the referee question "must all units share one latent law?". It clarifies how
+far Theorem 2 applies; it is not a separate headline result. One paragraph in the main text plus
+the remarks below in the supplement.
 
 ## Statement
 
@@ -104,30 +105,52 @@ $\{0, a, 1\}$), Lemma A had maximal violation $0$ and Lemma B $9 \times 10^{-16}
 This also held under Hoeffding's weaker condition $c \ge n\bar p$. Test:
 `tests/test_bernoulli_sums.py`.
 
-## Exact check (R06)
+## Numerical check (R06)
 
 Gaussian noise. Calibration latent laws are exponential tails $b - E/u$, the extremal laws, with
-$Q_q(|W_i|) = r_0 + \tau_i/u_i$, rate $u_i = 200 L_i$ with $L_i$ lognormal(0, 0.7), and noise scale
-adversarial per unit. Unit parameters are i.i.d., so the reliability is $\pr\{{\rm Bin}(K, H) \le k - 1\}$
-exactly, with $H = E\pr(|V_i| < r_0)$.
+$Q_q(|W_i|) = r_0 + \tau_i/u_i$ ($\tau$ in units of the tail scale $1/u$) and noise scale
+adversarial per unit; each $\pi_i = \pr(|V_i| < r_0)$ is computed from a closed form.
 
-| design | $H - \Psi_N(q)$, q = 0.9 | Theorem 2 rank, rel. at $K = 10^6$ | usual rank, rel. at $K = 10^6$ |
+*Part 1: unit parameters i.i.d.* The indicators are i.i.d. with $H = E\pi_i$, and the
+reliability is $\pr\{{\rm Bin}(K, H) \le k - 1\}$. $H$ is exact in the homogeneous and point-mass
+rows. In the heterogeneous rows it is a Monte Carlo mean over 4000 draws, with standard error
+about $2 \times 10^{-4}$, so those reliabilities carry Monte Carlo error. This does not matter
+here, because $H - \Psi_N$ is about $-0.01$, fifty standard errors.
+
+| design, q = 0.9 | $H - \Psi_N(q)$ | Theorem 2 rank, rel. at $K = 10^4$ / $10^6$ | usual rank, $10^4$ / $10^6$ |
 |---|---|---|---|
-| homogeneous extremal ($\tau = 0$) | $0$ (to $10^{-14}$) | 0.9502 | 0.150 |
-| heterogeneous, $\tau_i = \lvert N(0, 0.02^2)\rvert$ | $-0.014$ | 1.000 | 1.000 |
-| 10% of units easier ($\tau = -0.02$) | $-0.011$ | 1.000 | 1.000 |
-| random unit (mixture of atoms) | $+0.049$ | 0.000 (from $K = 10^3$) | 0.000 |
+| homogeneous extremal ($\tau = 0$, $u = 200$) | $0$ (to $10^{-14}$) | 0.952 / 0.950 | 0.918 / 0.150 |
+| homogeneous, $r_i = 0.999995$, $u = 200$ ($\tau = -0.001$) | $+8.8 \times 10^{-4}$ | 0.915 / 0.094 | 0.864 / 0.000 |
+| homogeneous, $r_i = 0.999995$, $u = 2000$ ($\tau = -0.01$) | $+8.9 \times 10^{-3}$ | 0.086 / 0.000 | 0.050 / 0.000 |
+| heterogeneous, $\tau_i = \lvert N(0, 0.02^2)\rvert$ (MC) | $-0.014$ | 1.000 / 1.000 | 1.000 / 1.000 |
+| 10% of units easier, $\tau = -0.02$ (MC) | $-0.010$ | 1.000 / 1.000 | 1.000 / 1.000 |
+| random unit (mixture of atoms) | $+0.049$ | 0.000 / 0.000 | 0.000 / 0.000 |
 
 At $q = 0.8$ the pattern is the same. Under the mixture design, the shape-free rank (level
 $(1 + q)/2$) keeps reliability $\ge 0.95$ at every $K$, as Remark 3 predicts.
 
+*Part 2: fixed units, independent but not identically distributed.* One draw of the parameters
+of $K$ units is held fixed, and the reliability is the Poisson-binomial probability, computed
+exactly by recursion (`results/heterogeneous_latent_fixed.csv`). When the condition holds,
+$\max_i \pi_i = \Psi_N(q)$, attained by units with $\tau_i \approx 0$, as the corollary allows. The
+Theorem 2 rank then has reliability $0.9989$ ($K = 10^3$) and $1.0000$ ($10^4$) at $q = 0.9$, and
+$0.9955$ and $1.0000$ at $q = 0.8$. With 10% easier units, $\max_i \pi_i$ exceeds $\Psi_N$
+($0.9187$ at $q = 0.9$), but the reliability stays $\ge 0.997$.
+
 Reading:
-- The bound is attained only by homogeneous extremal laws. Heterogeneity across units that
-  satisfy the condition only adds slack, the same message as R03 for heterogeneous noise
-  scales.
-- The quantile condition is sufficient, not necessary (row 3, consistent with Remark 1). Only
-  unbounded heterogeneity relative to the new unit, as in the mixture design, breaks the
-  guarantee. No latent shape assumption on the components can fix that.
+- The bound is attained by homogeneous extremal laws. Heterogeneity across units that satisfy
+  the condition only adds slack, the same message as R03 for heterogeneous noise scales.
+- The quantile condition is sufficient, not necessary. Some designs that violate it keep the
+  guarantee (row 5, Part 2, Remark 1). But a violation can break the guarantee however small it
+  is. At the homogeneous extremal law, lowering every $r_i$ from $1$ to $0.999995$ already
+  drops the reliability of the Theorem 2 rank to $0.094$ at $K = 10^6$. Whether a violation is
+  small is relative to the latent tail scale: with a tail ten times steeper, the same violation
+  gives $0.086$ at $K = 10^4$. This is the sharpness of Theorem 2 seen from the other side: at
+  the extremal law the condition has no slack.
+- Correct message: *the quantile ordering is sufficient; some designs that violate it keep the
+  guarantee, but even a small violation can break it, depending on the latent law and on $K$.*
+  No latent shape assumption on the calibration laws can replace the link between units
+  (Remark 3).
 
 ## For the paper
 

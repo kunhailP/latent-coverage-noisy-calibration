@@ -27,11 +27,12 @@ def test_derivative_increases_along_maximisers():
     assert np.all(np.diff(logD) > 0)
 
 
-@pytest.mark.parametrize('q', [0.4, 0.5, 0.8, 0.9, 0.95, 0.99, 0.999])
+@pytest.mark.parametrize('q', [0.3679, 0.368, 0.4, 0.5, 0.8, 0.9, 0.95, 0.99, 0.999, 0.999999])
 def test_closed_form_matches_direct_maximisation(q):
     lo, hi = psi_gaussian_enclosure(q)
     assert 0 < hi - lo < 1e-15
-    assert psi_gaussian_float(q)[0] == pytest.approx((lo + hi) / 2, abs=2e-15)
+    # near 1/e the supremand is flat in s, so the double-precision maximum is good to ~1e-14
+    assert psi_gaussian_float(q)[0] == pytest.approx((lo + hi) / 2, abs=1e-14)
 
 
 def test_below_one_over_e_the_supremum_is_one_half():

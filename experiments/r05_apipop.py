@@ -105,7 +105,9 @@ def one(args):
     g = ALPHA / 2
     kq = int(math.ceil((K + 1) * (1 - g)))
     qg = S[kq - 1] if kq <= K else np.inf
-    dnew = rng.choice(D, 200)                       # a new district's variance is unknown
+    # application variant of LatentCP: a new district's variance is unknown, so it is drawn from
+    # the calibration estimates D_c; LatentCP itself assumes the forward model (D_new) is known
+    dnew = rng.choice(D, 200)
     radii = np.array([latentcp_radius(x, qg, g) for x in dnew])
     rows = []
     for name, (c, hw) in ints.items():

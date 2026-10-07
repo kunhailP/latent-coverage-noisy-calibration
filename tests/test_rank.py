@@ -77,3 +77,11 @@ def test_one_sided_levels():
     assert (r.k_necessary, r.k) == (9101, 9101)          # bracket narrow enough: exact here
     with pytest.raises(ValueError):
         level('gaussian', 0.9, sided='left')
+
+
+def test_one_sided_anderson_needs_q_at_least_one_half():
+    # for t < 0, pr(W + e <= t) >= pr(W <= t): the noisy threshold is anti-conservative
+    with pytest.raises(ValueError):
+        level('gaussian', 0.2, 'symmetric_unimodal', sided='one')
+    assert level('gaussian', 0.5, 'symmetric_unimodal', sided='one').sufficient == 0.5
+    assert level('gaussian', 0.2, 'symmetric_unimodal').sufficient == 0.2

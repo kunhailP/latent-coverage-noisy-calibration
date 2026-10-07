@@ -76,6 +76,10 @@ def level(noise, q, latent='bi_log_concave', sided='two'):
     if latent == 'symmetric_unimodal':
         if noise not in ('gaussian', 'symmetric_unimodal'):
             raise ValueError("Anderson's theorem needs symmetric unimodal noise")
+        # one-sided: pr(W + e <= t) = 1/2 + sign(t) pr(|W + e| <= |t|)/2, so Anderson makes the
+        # noisy threshold conservative only for t >= 0, i.e. q >= 1/2; below, it is anti-conservative
+        if sided == 'one' and q < 0.5:
+            raise ValueError('one-sided Anderson level needs q >= 1/2')
         return Level(noise, latent, q, q, q, PROVED, 'Anderson (1955)')
     if latent == 'none':
         beta = {'gaussian': 0.5, 'symmetric_unimodal': 0.5,
@@ -122,7 +126,7 @@ def psi_gaussian_float(q):
 
     def f(s):
         return ndtr(-a / s) + math.exp(math.log(q) + s * s / 2 + log_ndtr(a / s - s))
-    ss = np.geomspace(1e-4, 20, 3000)
+    ss = np.geomspace(1e-7, 1e4, 6000)         # s* -> inf as q -> 1/e and -> 0 as q -> 1
     i = int(np.argmax([f(s) for s in ss]))
     lo, hi = math.log(ss[max(i - 1, 0)]), math.log(ss[min(i + 1, len(ss) - 1)])
     r = minimize_scalar(lambda ls: -f(math.exp(ls)), bounds=(lo, hi), method='bounded',
